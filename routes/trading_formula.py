@@ -29,6 +29,7 @@ def trading_formula():
     return json.dumps(answers)
 
 def compute_formula(formula, variables):
+    formula = formula.replace('$$', '')  # Remove LaTeX math mode
     # Replace LaTeX variable names with their values
     for var, val in variables.items():
         formula = re.sub(rf'\\text\{{{var}\}}', str(val), formula)
