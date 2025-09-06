@@ -24,4 +24,4 @@ statsmodels==0.14.5
 text2num==3.0.0
 tzdata==2025.2
 Werkzeug==2.3.7
-zahlwort2num==0.4.2git 
+zahlwort2num==0.4.2
