@@ -17,64 +17,20 @@ def blankety():
     data = request.get_json()
     logging.info("data sent for evaluation {}".format(data))
 
+    # Implementation here:
     answers = []
     for series in data["series"]:
-        arr = np.array([x if x is not None else np.nan for x in series], dtype=float)
-        x = np.arange(len(arr))
-        mask = ~np.isnan(arr)
-        null_mask = np.isnan(arr)
-
-        # Candidate models
-        candidates = []
-
-        # Polynomial fits (degrees 1, 2, 3)
-        for deg in [1, 2, 3]:
-            try:
-                coeffs = np.polyfit(x[mask], arr[mask], deg)
-                poly = np.poly1d(coeffs)
-                pred = arr.copy()
-                pred[null_mask] = poly(x[null_mask])
-                candidates.append((pred, np.nanvar(pred[null_mask])))
-            except Exception:
-                pass
-
-        # Trigonometric fit (sinusoidal)
-        try:
-            from scipy.optimize import curve_fit
-            def sin_func(x, A, w, phi, c):
-                return A * np.sin(w * x + phi) + c
-            popt, _ = curve_fit(sin_func, x[mask], arr[mask], p0=[1, 1, 0, 0])
-            pred = arr.copy()
-            pred[null_mask] = sin_func(x[null_mask], *popt)
-            candidates.append((pred, np.nanvar(pred[null_mask])))
-        except Exception:
-            pass
-
-        # Exponential fit
-        try:
-            def exp_func(x, a, b, c):
-                return a * np.exp(b * x) + c
-            popt, _ = curve_fit(exp_func, x[mask], arr[mask], p0=[1, 0.01, 0])
-            pred = arr.copy()
-            pred[null_mask] = exp_func(x[null_mask], *popt)
-            candidates.append((pred, np.nanvar(pred[null_mask])))
-        except Exception:
-            pass
-
-        # LOESS + cubic spline (as before)
+        best_imputed = None
+        best_score = float('inf')
+        null_mask = [x is None for x in series]
+        # Try several smoothing fractions and pick the best for each series
         for frac in [0.15, 0.25, 0.35, 0.5]:
-            try:
-                imputed = impute_nulls_adaptive(series, frac=frac)
-                candidates.append((imputed, np.nanvar(imputed[null_mask])))
-            except Exception:
-                pass
-
-        # Select best candidate by lowest variance at nulls
-        if candidates:
-            best_imputed = min(candidates, key=lambda tup: tup[1])[0]
-        else:
-            best_imputed = arr.copy()
-            best_imputed[null_mask] = 0
+            imputed = impute_nulls_adaptive(series, frac=frac)
+            # Use variance of imputed values at nulls as a proxy for stability
+            score = np.nanvar(imputed[null_mask])
+            if score < best_score:
+                best_score = score
+                best_imputed = imputed
         answers.append(best_imputed.tolist())
 
     result = {"answer": answers}
