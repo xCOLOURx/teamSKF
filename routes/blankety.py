@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 @app.route('/blankety', methods=['POST'])
-def evaluate():
+def blankety():
     data = request.get_json()
     logging.info("data sent for evaluation {}".format(data))
     input_value = data.get("input")

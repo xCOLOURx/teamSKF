@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 @app.route('/princess-diaries', methods=['POST'])
-def evaluate():
+def princess_diaries():
     data = request.get_json()
     logging.info("data sent for evaluation {}".format(data))
     tasks = data.get("tasks")
