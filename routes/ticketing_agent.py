@@ -21,7 +21,8 @@ def ticketing_agent():
     for customer in customers:
         vip_bonus = 100 if customer["vip_status"] else 0
         points = {concert["name"]:vip_bonus for concert in concerts}
-        points[priority[customer["credit_card"]]] += 50
+        if (customer["credit_card"] in priority):
+            points[priority[customer["credit_card"]]] += 50
         ax, ay = customer["location"][0], customer["location"][1]
         for concert in concerts:
             bx,by = concert["booking_center_location"][0], concert["booking_center_location"][1]
