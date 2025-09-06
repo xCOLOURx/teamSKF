@@ -12,10 +12,12 @@ logger = logging.getLogger(__name__)
 
 @app.route('/investigate', methods=['POST'])
 def universal_bureau_surv():
+    
     data = request.get_json()
     logger.info(data)
     res = []
-    for network in data:
+    network_list = data["networks"]
+    for network in network_list:
         ans = {"networkId": network["networkId"]}
         
         edges = set()
@@ -34,3 +36,6 @@ def universal_bureau_surv():
         
         
     return json.dumps({"networks": res})
+    
+    
+# [{'networkId': '68456992-3fd6-4983-a35e-1f0a90f15c25', 'network': [{'spy1': 'Tony Stark', 'spy2': 'Natasha Romanoff'}, {'spy1': 'Tony Stark', 'spy2': 'Steve Rogers'}, {'spy1': 'Natasha Romanoff', 'spy2': 'Steve Rogers'}]}, {'networkId': 'fee2ea9d-7af5-4133-b1f4-7222373026ef', 'network': [{'spy1': 'Reed Richards', 'spy2': 'Ben Grimm'}, {'spy1': 'Sue Storm', 'spy2': 'Ben Grimm'}, {'spy1': 'Johnny Storm', 'spy2': 'Ben Grimm'}, {'spy1': 'Johnny Storm', 'spy2': 'Sue Storm'}]}, {'networkId': '3fd489bc-3710-491e-82ab-e78b67da9543', 'network': [{'spy1': 'Erik Lensherr', 'spy2': 'Scott Summers'}, {'spy1': 'Scott Summers', 'spy2': 'Ororo Munroe'}, {'spy1': 'Charles Xavier', 'spy2': 'Ororo Munroe'}, {'spy1': 'Scott Summers', 'spy2': 'Jean Grey'}, {'spy1': 'Ororo Munroe', 'spy2': 'Jean Grey'}]}]
