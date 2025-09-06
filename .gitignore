@@ -3,4 +3,6 @@ main.py
 regress.py
 __pycache__/
 routes/ticketing_agent.py
+routes/trading_formula.py
 ticketing_agent.json
+test_inputs/
