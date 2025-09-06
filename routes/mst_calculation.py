@@ -14,6 +14,8 @@ from PIL import Image
 from collections import defaultdict
 from routes import app
 
+import easyocr
+
 
 pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
@@ -98,6 +100,8 @@ def extract_graph(image):
 
         j = 0
 
+        reader = easyocr.Reader(['en'], gpu=False)
+
 
         for color in edge_colors:
             # For each color in the edge_colors list
@@ -117,7 +121,7 @@ def extract_graph(image):
             gray = cv2.bitwise_not(gray)
 
 
-            def remove_line_direct(img, inpaint_radius=3):
+            def remove_line_direct(img, inpaint_radius=2):
                 """
                 Remove lines from a grayscale or color image using Hough Transform + inpainting.
                 """
@@ -132,14 +136,14 @@ def extract_graph(image):
 
                 # Detect lines (sensitive to slanted ones too)
                 lines = cv2.HoughLinesP(edges, 1, np.pi / 180,
-                                        threshold=60, minLineLength=30, maxLineGap=30)
+                                        threshold= 60, minLineLength=100, maxLineGap=500)
 
                 # Create proper binary mask
                 mask = np.zeros(img.shape[:2], dtype=np.uint8)  # must be single-channel
                 if lines is not None:
                     for line in lines:
                         x1, y1, x2, y2 = line[0]
-                        cv2.line(mask, (x1, y1), (x2, y2), 255, thickness=5)
+                        cv2.line(mask, (x1, y1), (x2, y2), 255, thickness=4)
 
                 # Inpaint the detected line regions
                 inpainted = cv2.inpaint(color_img, mask, inpaint_radius, cv2.INPAINT_TELEA)
@@ -151,22 +155,65 @@ def extract_graph(image):
 
             # Example usage:
             result = remove_line_direct(gray)
+            scale_factor = 5 # 2x, 3x, etc.
+            result = cv2.resize(result, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_CUBIC)
+
+            _, thresh = cv2.threshold(result, 250, 255, cv2.THRESH_BINARY_INV)
+
+            # Find coordinates of all non-zero (black text) pixels
+            coords = cv2.findNonZero(thresh)  
+
+            # Get bounding box of the text
+            x, y, w, h = cv2.boundingRect(coords)
+
+            # Add padding (e.g., 10 pixels around)
+            padding = 10
+            x_start = max(x - padding, 0)
+            y_start = max(y - padding, 0)
+            x_end = min(x + w + padding, result.shape[1])
+            y_end = min(y + h + padding, result.shape[0])
+
+            # Crop the image to the bounding box
+            result = result[y_start:y_end, x_start:x_end]
+
+            j += 1
+            # cv2.imwrite("debug_gray" + str(j)+".png", result)
+
 
             # OCR with whitelist (digits only)
-            config = "--psm 6 -c tessedit_char_whitelist=0123456789"
-            data = pytesseract.image_to_data(result, output_type=pytesseract.Output.DICT, config=config)
+            # config = "--psm 6 -c tessedit_char_whitelist=0123456789"
+            # data = pytesseract.image_to_data(result, output_type=pytesseract.Output.DICT, config=config)
 
+            #print(data)
+
+            # j += 1
+            # cv2.imwrite("debug_gray" + str(j)+".png", result)
+
+            data = reader.readtext(result, detail=1, paragraph=False)
+            # print(data)
+
+            digits = [text for (_, text, prob) in data if text.isdigit()][0]
+
+            # print(digits)
+
+           
+            if digits.strip().isdigit():  # Ensure that the text is a digit
+                weights.append({
+                    "color": tuple(color),  # Original BGR color
+                    "digit": int(digits),
+                })
 
 
             # Extract digits and their positions
-            for i, text in enumerate(data["text"]):
-                if text.strip().isdigit():  # Ensure that the text is a digit
-                    x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
-                    weights.append({
-                        "color": tuple(color),  # Original BGR color
-                        "digit": int(text),
-                        "position": (x + w // 2, y + h // 2)
-                    })
+            # for i, text in enumerate(data["text"]):
+            #     if text.strip().isdigit():  # Ensure that the text is a digit
+            #         x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
+            #         print(text)
+            #         weights.append({
+            #             "color": tuple(color),  # Original BGR color
+            #             "digit": int(text),
+            #             "position": (x + w // 2, y + h // 2)
+            #         })
 
         return weights
 
@@ -199,6 +246,7 @@ def extract_graph(image):
                     G.add_edge(i, j, weight=weight_val)
 
 
+    #print("Edges:", G.edges(data=True))
 
     return G
 

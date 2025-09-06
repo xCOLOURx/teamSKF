@@ -12,25 +12,25 @@ logger = logging.getLogger(__name__)
 def coord_to_square(x, y, cols, rows, cell, minx, miny):
     """
     Convert (x,y) SVG coordinate into 1-based boustrophedon square index.
-    Start: bottom-left, End: top-left.
+    Square 1 = bottom-left, Square W*H = top-left.
     """
     X = x - minx
     Y = y - miny
 
     col = X // cell
     row_from_top = Y // cell
-    row_from_bottom = rows - 1 - row_from_top
+    row_from_bottom = rows - 1 - row_from_top  # 0 = bottom row
 
-    if row_from_bottom % 2 == 0:  # left-to-right row
-        return row_from_bottom * cols + col + 1
-    else:  # right-to-left row
-        return row_from_bottom * cols + (cols - col)
+    if row_from_bottom % 2 == 0:  # left-to-right
+        idx = row_from_bottom * cols + col + 1
+    else:  # right-to-left
+        idx = row_from_bottom * cols + (cols - col)
+
+    return int(idx)
 
 
 def parse_board(svg_text):
-    """
-    Parse board size and jumps from the SVG.
-    """
+    """Parse board size and jumps from the SVG."""
     # Extract viewBox
     vb = re.search(r'viewBox="\s*(-?\d+)\s+(-?\d+)\s+(\d+)\s+(\d+)\s*"', svg_text)
     if not vb:
@@ -57,16 +57,11 @@ def parse_board(svg_text):
         e = coord_to_square(x2, y2, cols, rows, cell, minx, miny)
         jumps[s] = e
 
-    return cols, rows, cell, minx, miny, jumps
+    return cols, rows, jumps
 
-
-# ---------- Game rules ----------
 
 def apply_roll(pos, die, roll, final_sq, jumps):
-    """
-    Move a player given current position, die type, and roll.
-    die: 0=regular, 1=power-of-two
-    """
+    """Move a player given current position, die type, and roll."""
     if die == 0:  # regular die
         step = roll
         new_die = 1 if roll == 6 else 0
@@ -81,44 +76,65 @@ def apply_roll(pos, die, roll, final_sq, jumps):
     new_pos = pos + step
     if new_pos > final_sq:
         new_pos = final_sq - (new_pos - final_sq)
+
+    # Apply snake/ladder jump
     new_pos = jumps.get(new_pos, new_pos)
     return new_pos, new_die
 
 
-# ---------- Solver: BFS ensuring Player 2 wins ----------
+# ---------- Path Finder ----------
 
-def solve_player2(cols, rows, jumps):
+def find_path(cols, rows, jumps):
+    """Find an optimal path to the final square, recording rolls."""
     final_sq = cols * rows
-    # State: (p1, p2, die1, die2, turn, history)
-    start = (0, 0, 0, 0, 0, "")  # both before start, both regular dice, turn=0 (P1)
+    start = (0, 0, "")  # pos, die, rolls
     queue = deque([start])
     visited = set()
 
     while queue:
-        p1, p2, d1, d2, turn, hist = queue.popleft()
+        pos, die, rolls = queue.popleft()
+        if pos == final_sq:
+            return rolls
 
-        # Win/loss checks
-        if p2 == final_sq:
-            return hist
-        if p1 == final_sq:
+        if (pos, die) in visited:
             continue
+        visited.add((pos, die))
 
-        key = (p1, p2, d1, d2, turn)
-        if key in visited:
-            continue
-        visited.add(key)
+        for r in range(1, 7):
+            new_pos, new_die = apply_roll(pos, die, r, final_sq, jumps)
+            queue.append((new_pos, new_die, rolls + str(r)))
 
-        if turn == 0:  # Player 1's turn
-            for r in range(1, 7):
-                np1, nd1 = apply_roll(p1, d1, r, final_sq, jumps)
-                queue.append((np1, p2, nd1, d2, 1, hist + str(r)))
-        else:  # Player 2's turn
-            for r in range(1, 7):
-                np2, nd2 = apply_roll(p2, d2, r, final_sq, jumps)
-                queue.append((p1, np2, d1, nd2, 0, hist + str(r)))
+    return "1"  # fallback, shouldn't happen
 
-    # Fallback (should not happen under given constraints)
-    return "1"
+
+# ---------- Player 2 win strategy ----------
+
+def make_player2_win(optimal_rolls, cols, rows, jumps):
+    """
+    Modify the final move so:
+    - P1 overshoots and misses.
+    - P2 lands exactly on the final square.
+    """
+    final_sq = cols * rows
+
+    # Play out Player 1 until just before the last move
+    p1, d1 = 0, 0
+    for r in map(int, optimal_rolls[:-1]):
+        p1, d1 = apply_roll(p1, d1, r, final_sq, jumps)
+
+    # Replace last roll with overshoot (safe bump)
+    last_r = int(optimal_rolls[-1])
+    overshoot_r = last_r + 1 if last_r < 6 else 1
+
+    p1_rolls = optimal_rolls[:-1] + str(overshoot_r)
+    p2_rolls = optimal_rolls
+
+    result = []
+    for x, y in zip(p1_rolls, p2_rolls):
+        result.append(x)
+        result.append(y)
+    return "".join(str(r) for r in result)
+ 
 
 
 # ---------- Flask route ----------
@@ -128,10 +144,41 @@ def slpu():
     svg_input = request.data.decode("utf-8", errors="ignore")
     logging.info("Received SVG (truncated): %s", svg_input[:200])
 
-    cols, rows, cell, minx, miny, jumps = parse_board(svg_input)
-    rolls = solve_player2(cols, rows, jumps)
+    cols, rows, jumps = parse_board(svg_input)
+
+    # Final square = W * H
+    final_sq = cols * rows
+    logging.info("Board size: %dx%d, final square: %d", cols, rows, final_sq)
+
+    # Find optimal path to last square
+    optimal_rolls = find_path(cols, rows, jumps)
+
+    # Adjust to ensure Player 2 wins
+    rolls = make_player2_win(optimal_rolls, cols, rows, jumps)
 
     result_svg = f'<svg xmlns="http://www.w3.org/2000/svg"><text>{rolls}</text></svg>'
     logging.info("My result: %s", result_svg)
 
     return Response(result_svg, mimetype="image/svg+xml")
+
+
+# if __name__ == "__main__":
+#     with open("example.svg", "r", encoding="utf-8") as f:
+#         svg_text = f.read()
+
+#         cols, rows, jumps = parse_board(svg_text)
+
+#         # Final square = W * H
+#         final_sq = cols * rows
+#         logging.info("Board size: %dx%d, final square: %d", cols, rows, final_sq)
+
+#         # Find optimal path to last square
+#         optimal_rolls = find_path(cols, rows, jumps)
+
+#         # Adjust to ensure Player 2 wins
+#         rolls = make_player2_win(optimal_rolls, cols, rows, jumps)
+
+#         result_svg = f'<svg xmlns="http://www.w3.org/2000/svg"><text>{rolls}</text></svg>'
+#         logging.info("My result: %s", result_svg)
+
+#         print(rolls)
