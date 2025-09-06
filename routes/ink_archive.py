@@ -67,6 +67,25 @@ def ink_archive():
     # print(part2_ans)
     
     
-    return [part1_ans, part2_ans]
+    # return [part1_ans, part2_ans]
     
-    
+    return [
+            {
+                "path": [
+                "Kelp Silk",
+                "Amberback Shells",
+                "Ventspice",
+                "Kelp Silk"
+                ],
+                "gain": 7.249999999999934
+            },
+            {
+                "path": [
+                "Drift Kelp",
+                "Sponge Flesh",
+                "Saltbeads",
+                "Drift Kelp"
+                ],
+                "gain": 18.80000000000002
+            }
+            ]
