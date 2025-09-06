@@ -19,7 +19,7 @@ def trading_bot():
         observation_candles = index["observation_candles"]
 
         # Taken a stricter condition
-        if (previous_candles[2]["volume"] < observation_candles[0]["volume"] < observation_candles[1]["volume"] < observation_candles[2]["volume"]):
+        if (observation_candles[0]["volume"] < observation_candles[1]["volume"] < observation_candles[2]["volume"]):
             if (previous_candles[2]["close"] < observation_candles[0]["close"] < observation_candles[1]["close"] < observation_candles[2]["close"]):
                 dict["decision"] = "LONG"
                 dict["diff"] = observation_candles[2]["close"] - observation_candles[0]["close"]
