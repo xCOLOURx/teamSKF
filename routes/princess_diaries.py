@@ -34,21 +34,23 @@ def princess_diaries():
     print(prev_task)
     
     
-    dp = [0 for _ in range(T+1)]
-    dp_tasks = [[tuple()]]
-    for i,task in enumerate(tasks, start=1):
+    try:
+        dp = [0 for _ in range(T+1)]
+        dp_tasks = [[tuple()]]
+        for i,task in enumerate(tasks, start=1):
 
-        dp[i] = dp[prev_task[i]+1] + task["score"]
-        if (dp[i] < dp[i-1]):
-            dp[i] = dp[i-1]
-            dp_tasks.append([t for t in dp_tasks[i-1]])
-        elif (dp[i] == dp[i-1]):
-            best = [t for t in dp_tasks[i-1]]
-            best.extend([t + (task,) for t in dp_tasks[prev_task[i]+1]])
-            dp_tasks.append(best)
-        else:
-            dp_tasks.append([t + (task,) for t in dp_tasks[prev_task[i]+1]])    
-    
+            dp[i] = dp[prev_task[i]+1] + task["score"]
+            if (dp[i] < dp[i-1]):
+                dp[i] = dp[i-1]
+                dp_tasks.append([t for t in dp_tasks[i-1]])
+            elif (dp[i] == dp[i-1]):
+                best = [t for t in dp_tasks[i-1]]
+                best.extend([t + (task,) for t in dp_tasks[prev_task[i]+1]])
+                dp_tasks.append(best)
+            else:
+                dp_tasks.append([t + (task,) for t in dp_tasks[prev_task[i]+1]])    
+    except:
+        logger.info(data)
     # print(dp_tasks)
     row_id, col_id, weights = [], [], []
     V = 0
