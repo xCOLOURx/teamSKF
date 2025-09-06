@@ -1,0 +1,1 @@
+Alice'; UPDATE salary SET salary = 999999.0 WHERE name='Alice

@@ -15,9 +15,10 @@ logger = logging.getLogger(__name__)
 def homework():
     return send_file("../static/payload_homework")
     
-    
 @app.route('/payload_malicious', methods=['GET'])
 def malicious():
     return send_file("../static/payload_malicious")
     
-
+@app.route('/payload_sqlinject', methods=['GET'])
+def sqlinject():
+    return send_file("../static/payload_sqlinject")
