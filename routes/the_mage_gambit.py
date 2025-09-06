@@ -53,6 +53,7 @@ def compute_time_for_scenario(intel, reserve, fronts, stamina_full):
                 # extension: 0 minutes
                 add_time = 0
                 stamina += 1
+                mana += cost
             else:
                 add_time = 10
 
