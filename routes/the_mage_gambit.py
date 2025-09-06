@@ -80,7 +80,6 @@ def compute_time_for_scenario(intel, reserve, fronts, stamina_full):
     return total_time
 
 
-
 @app.route('/the-mages-gambit', methods=['POST'])
 def mage():
     payload = request.get_json(force=True)
