@@ -79,7 +79,7 @@ def operation_safeguard():
     data = request.get_json(silent=True)
     chal1 = data["challenge_one"]
     chal1_ans = chal1["transformed_encrypted_word"]
-    for trans in reversed(chal1["transformations"][1:-1].split(", ")):
+    for trans in reversed(chal1["transformations"]):
         op = OPERATIONS[trans]
         chal1_ans = op(chal1_ans)
     print(chal1_ans)
