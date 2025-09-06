@@ -55,7 +55,7 @@ def bf(ratios, goods):
                     ans = (res, cycle)
     
             
-    return { "gain": (ans[0]-1.0)*100, "path": [goods[u] for u in ans[1]] }
+    return { "path": [goods[u] for u in ans[1]], "gain": (ans[0]-1.0)*100 }
 
 @app.route('/The-Ink-Archive', methods=['POST'])
 def ink_archive():
