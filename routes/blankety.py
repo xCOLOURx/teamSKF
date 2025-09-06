@@ -1,6 +1,10 @@
 import json
 import logging
 
+import numpy as np
+import pandas as pd
+from scipy.interpolate import CubicSpline
+
 from flask import request
 
 from routes import app
@@ -15,45 +19,38 @@ def blankety():
     input_value = data.get("input")
 
     # Implementation here:
-    result = input_value
+    answers = []
+    for series in input["series"]:
+        imputed = impute_nulls_with_spline(series, window=3)
+        answers.append(imputed.tolist())
+
+    result = {"answer": answers}
 
     logging.info("My result :{}".format(result))
     return json.dumps(result)
 
-# Rules
-# 1. Replace all nulls
-# 2. Signal is function (e.g. linear/quad, periodic, short-memory dependency) + noise
-# 3. Local regression, spline fits, state-space models, or autoregressive smoothing
-# 4. Return exactly 100 lists of length 1000
 
-# import numpy as np
-# import pandas as pd
-# from typing import Optional, Union
+# Smoothing function (rolling mean)
+def smooth_series(series, window=3):
+    arr = np.array([x if x is not None else np.nan for x in series], dtype=float)
+    return pd.Series(arr).rolling(window, min_periods=1, center=True).mean().to_numpy()
 
-# def smooth_series(series: Union[pd.Series, np.ndarray], window: int = 5) -> np.ndarray:
-#     """
-#     Smooth a series using a rolling mean.
-#     Args:
-#         series: Input series (pandas Series or numpy array)
-#         window: Window size for rolling mean
-#     Returns:
-#         Smoothed numpy array
-#     """
-#     if isinstance(series, pd.Series):
-#         return series.rolling(window, min_periods=1, center=True).mean().to_numpy()
-#     else:
-#         return pd.Series(series).rolling(window, min_periods=1, center=True).mean().to_numpy()
+# Cubic spline regression for imputation
+def impute_nulls_with_spline(series, window=3):
+    arr = np.array([x if x is not None else np.nan for x in series], dtype=float)
+    smoothed = smooth_series(arr, window)
+    x = np.arange(len(arr))
+    mask = ~np.isnan(smoothed)
+    # Fit cubic spline to smoothed, non-null data
+    spline = CubicSpline(x[mask], smoothed[mask])
+    imputed = arr.copy()
+    null_mask = np.isnan(arr)
+    imputed[null_mask] = spline(x[null_mask])
+    return imputed
 
-# def regress_series(x: np.ndarray, y: np.ndarray, degree: int = 1) -> np.poly1d:
-#     """
-#     Fit a polynomial regression to the data.
-#     Args:
-#         x: Independent variable (1D array)
-#         y: Dependent variable (1D array)
-#         degree: Degree of polynomial
-#     Returns:
-#         np.poly1d object representing the fitted polynomial
-#     """
-#     mask = ~np.isnan(y)
-#     coeffs = np.polyfit(x[mask], y[mask], degree)
-#     return np.poly1d(coeffs)
+# # Test input
+# input = {
+#     "series": [
+#         [0.10, None, 0.30, None, 0.52]
+#     ]
+# }
