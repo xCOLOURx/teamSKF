@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 @app.route('/investigate', methods=['POST'])
 def universal_bureau_surv():
     data = request.get_json()
+    print(data)
     res = []
     for network in data["networks"]:
         ans = {"networkId": network["networkId"]}
@@ -26,9 +27,9 @@ def universal_bureau_surv():
         for u,v in bridges:
             edges.discard((u,v))
             edges.discard((v,u))
-        ans["network"] = []
+        ans["extraChannels"] = []
         for u,v in edges:
-            ans["network"].append({"spy1": u, "spy2": v})
+            ans["extraChannels"].append({"spy1": u, "spy2": v})
         res.append(ans)
         
         
