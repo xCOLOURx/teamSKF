@@ -10,3 +10,4 @@ import routes.trading_bot
 import routes.ink_archive
 import routes.trivia
 import routes.mst_calculation
+import routes.sailing_club
