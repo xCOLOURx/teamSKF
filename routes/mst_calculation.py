@@ -12,6 +12,7 @@ from flask import request
 from PIL import Image
 
 from collections import defaultdict
+from routes import app
 
 
 
