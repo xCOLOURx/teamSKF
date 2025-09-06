@@ -24,8 +24,7 @@ def princess_diaries():
     # print(starting_station)
     
     tasks.sort(key=lambda t: t["end"])
-    dp = [None for _ in range(T+1)]
-    dp[0] = (0, ())
+    
     end_times = [task["end"] for task in tasks]
     prev_task = []
     for task in tasks:
@@ -34,6 +33,8 @@ def princess_diaries():
         prev_task.append(pos)
     # print(prev_task)
     
+    
+    dp = [(0, tuple()) for _ in range(T+1)]
     for i,task in enumerate(tasks, start=1):
 
         dp[i] = dp[prev_task[i-1]] 
