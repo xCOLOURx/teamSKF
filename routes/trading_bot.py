@@ -14,6 +14,7 @@ def trading_bot():
     lst = []
     for index in data:
         dict = {}
+        title = index["title"]
         previous_candles = index["previous_candles"]
         observation_candles = index["observation_candles"]
 
@@ -23,6 +24,10 @@ def trading_bot():
 
         # If price increased, LONG; else SHORT
         dict["decision"] = "LONG" if exit_price > entry_price else "SHORT"
+
+        if ("buy" in title.lower()) or ("long" in title.lower()) or ("bull" in title.lower()) or ("bullish" in title.lower()) or ("moon" in title.lower()) or ("rocket" in title.lower()) or ("pump" in title.lower()):
+            dict["decision"] = "LONG"
+        
         dict["id"] = index["id"]
         lst.append(dict)
     print(lst)
