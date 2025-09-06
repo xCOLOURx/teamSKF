@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 @app.route('/investigate', methods=['POST'])
 def universal_bureau_surv():
     
-    data = request.get_json()
+    data = request.get_json(silent=True)
     logger.info(data)
     res = []
     try:
