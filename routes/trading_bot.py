@@ -27,6 +27,8 @@ def trading_bot():
 
         if ("buy" in title.lower()) or ("long" in title.lower()) or ("bull" in title.lower()) or ("bullish" in title.lower()) or ("moon" in title.lower()) or ("rocket" in title.lower()) or ("pump" in title.lower()):
             dict["decision"] = "LONG"
+        elif ("sell" in title.lower()) or ("short" in title.lower()) or ("bear" in title.lower()) or ("bearish" in title.lower()) or ("dump" in title.lower()) or ("crash" in title.lower()) or ("down" in title.lower()):
+            dict["decision"] = "SHORT"
         
         dict["id"] = index["id"]
         lst.append(dict)
