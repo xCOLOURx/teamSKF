@@ -67,21 +67,25 @@ def double_consonants(s):
 
 
 OPERATIONS = {
-    "mirror_words(x)": mirror_words,
-    "encode_mirror_alphabet(x)": encode_mirror_alphabet,
-    "toggle_case(x)": toggle_case,
-    "swap_pairs(x)": swap_pairs,
-    "encode_index_parity(x)": encode_index_parity,
-    "double_consonants(x)": double_consonants
+    "mirror_words(": mirror_words,
+    "encode_mirror_alphabet(": encode_mirror_alphabet,
+    "toggle_case(": toggle_case,
+    "swap_pairs(": swap_pairs,
+    "encode_index_parity(": encode_index_parity,
+    "double_consonants(": double_consonants
 }
 @app.route('/operation-safeguard', methods=['POST'])
 def operation_safeguard():
     data = request.get_json(silent=True)
+    logger.info(data)
     chal1 = data["challenge_one"]
     chal1_ans = chal1["transformed_encrypted_word"]
     for trans in reversed(chal1["transformations"]):
-        op = OPERATIONS[trans]
-        chal1_ans = op(chal1_ans)
+        while trans != "x":
+            i = trans.find('(')+1
+            op = OPERATIONS[trans[:i]]
+            chal1_ans = op(chal1_ans)
+            trans = trans[i:-1]
     print(chal1_ans)
     
     chal2 = data["challenge_two"]
