@@ -20,8 +20,18 @@ def blankety():
     # Implementation here:
     answers = []
     for series in data["series"]:
-        imputed = impute_nulls_with_spline(series, window=3)
-        answers.append(imputed.tolist())
+        best_imputed = None
+        best_score = float('inf')
+        null_mask = [x is None for x in series]
+        # Try several smoothing fractions and pick the best for each series
+        for frac in [0.15, 0.25, 0.35, 0.5]:
+            imputed = impute_nulls_adaptive(series, frac=frac)
+            # Use variance of imputed values at nulls as a proxy for stability
+            score = np.nanvar(imputed[null_mask])
+            if score < best_score:
+                best_score = score
+                best_imputed = imputed
+        answers.append(best_imputed.tolist())
 
     result = {"answer": answers}
 
@@ -29,17 +39,26 @@ def blankety():
     return json.dumps(result)
 
 # Smoothing function (rolling mean)
-def smooth_series(series, window=3):
+
+# LOESS smoothing (local polynomial regression)
+def loess_smooth(series, frac=0.3):
+    from statsmodels.nonparametric.smoothers_lowess import lowess
     arr = np.array([x if x is not None else np.nan for x in series], dtype=float)
-    return pd.Series(arr).rolling(window, min_periods=1, center=True).mean().to_numpy()
+    x = np.arange(len(arr))
+    mask = ~np.isnan(arr)
+    smoothed = lowess(arr[mask], x[mask], frac=frac, return_sorted=False)
+    result = arr.copy()
+    result[mask] = smoothed
+    return result
 
 # Cubic spline regression for imputation
-def impute_nulls_with_spline(series, window=3):
+
+# Improved imputation: combine LOESS and cubic spline
+def impute_nulls_adaptive(series, frac=0.3):
     arr = np.array([x if x is not None else np.nan for x in series], dtype=float)
-    smoothed = smooth_series(arr, window)
+    smoothed = loess_smooth(arr, frac=frac)
     x = np.arange(len(arr))
     mask = ~np.isnan(smoothed)
-    # Fit cubic spline to smoothed, non-null data
     spline = CubicSpline(x[mask], smoothed[mask])
     imputed = arr.copy()
     null_mask = np.isnan(arr)
