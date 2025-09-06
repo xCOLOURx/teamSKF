@@ -1,6 +1,7 @@
 from flask import Flask
-
+from flask import json
 app = Flask(__name__)
+json.provider.DefaultJSONProvider.ensure_ascii = False
 import routes.square
 import routes.blankety
 import routes.princess_diaries
@@ -12,3 +13,5 @@ import routes.trivia
 import routes.mst_calculation
 import routes.sailing_club
 import routes.slpu
+import routes.ticketing_agent
+import routes.duolingo_sort
