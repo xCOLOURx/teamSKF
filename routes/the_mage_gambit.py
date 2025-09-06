@@ -52,6 +52,7 @@ def compute_time_for_scenario(intel, reserve, fronts, stamina_full):
             if prev_action_was_attack and prev_front == front:
                 # extension: 0 minutes
                 add_time = 0
+                stamina += 1
             else:
                 add_time = 10
 
