@@ -57,7 +57,7 @@ def princess_diaries():
         v = ts[i]["station"]
         min_fee += length[curr][v]
         curr = v
-    min_fee += length[curr][0]
+    min_fee += length[curr][starting_station]
     schedule = [t["name"] for t in ts]
     # print(max_score, min_fee, schedule)
     ans = {
