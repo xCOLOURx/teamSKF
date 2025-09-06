@@ -6,6 +6,7 @@ from flask import request
 
 from routes import app
 from text_to_num import text2num
+import zahlwort2num as w2n
 from cnc import convert
 
 logger = logging.getLogger(__name__)
@@ -35,21 +36,21 @@ def english_to_int(s):
 
 def trad_ch_to_int(s):
     res = convert.chinese2number(s)
-    assert s == convert.number2chinese(res, language="T")
+    assert s == convert.number2chinese(int(res), language="T", forceErLian="forceNot")
     return res
 
 def simp_ch_to_int(s):
     res = convert.chinese2number(s)
-    assert s == convert.number2chinese(res, language="S")
+    assert s == convert.number2chinese(int(res), language="S", forceErLian="forceNot")
     return res
 
 def german_to_int(s):
-    return text2num(s, "de")
+    return w2n.convert(s)
 
 CONVERSIONS = [
-    (roman_to_int, 0), (english_to_int, 1), 
+    (int, 5), (roman_to_int, 0), (english_to_int, 1), 
     (trad_ch_to_int, 2), (simp_ch_to_int, 3),
-    (german_to_int, 4), (int, 5)]
+    (german_to_int, 4), ]
 
 
 @app.route('/duolingo-sort', methods=['POST'])
@@ -57,7 +58,7 @@ def duolingo_sort():
     data = request.get_data(as_text=True)
     # print(data)
     data = json.loads(data)
-    logger.info(data)
+    # logger.info(data)
     inp = data["challengeInput"]["unsortedList"]
     lis = []
     for num in inp:
@@ -67,6 +68,8 @@ def duolingo_sort():
                 break
             except:
                 pass
+        else:
+            logger.info(num)
     # print(lis)
     if (data["part"] == "ONE"):
         res = {
@@ -76,7 +79,7 @@ def duolingo_sort():
         res = {
             "sortedList": [x for _,_,x in sorted(lis)]
         }
-    logger.info(res)
+    # logger.info(sorted(lis))
     return res
                 
 
