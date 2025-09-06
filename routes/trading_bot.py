@@ -25,12 +25,11 @@ def trading_bot():
         # 1. if later close > previous close, LONG
         #    else
         # 2.    if sum of last 3 closes in observation > sum of last 3 closes in previous, LONG
+        #       else
+        # 3.       if sum of last 3 volume in observation > sum of last 3 volume in previous, LONG
         # 3. else SHORT
-        # TODO: incorporate volume
-        # 
-        if observation_candles[-1]["close"] > previous_candles[-1]["close"]:
-            dict["decision"] = "LONG"
-        elif sum(candle["close"] for candle in observation_candles[-3:]) > sum(candle["close"] for candle in previous_candles[-3:]):
+
+        if (observation_candles[-1]["close"] > previous_candles[-1]["close"]) or (sum(candle["close"] for candle in observation_candles[-3:]) > sum(candle["close"] for candle in previous_candles[-3:])) or (sum(candle["volume"] for candle in observation_candles[-3:]) > sum(candle["volume"] for candle in previous_candles[-3:])):
             dict["decision"] = "LONG"
         else:
             dict["decision"] = "SHORT"
