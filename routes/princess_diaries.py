@@ -5,7 +5,8 @@ import logging
 from flask import request
 
 from routes import app
-import networkx as nx
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import shortest_path
 
 logger = logging.getLogger(__name__)
 
@@ -41,28 +42,33 @@ def princess_diaries():
         if (dp[i][0] < dp[i-1][0]):
             dp[i] = dp[i-1]
     
-    edges = []
+    row_id, col_id, weights = [], [], []
+    V = 0
     for station in subway:
         u, v = station["connection"]
-        edge = (u, v, {"weight": station["fee"]})
-        edges.append(edge)
-    # print(edges)
-    G = nx.Graph()
-    G.add_edges_from(edges)
-    length = dict(nx.floyd_warshall(G, weight="weight"))
+        V = max(V, u, v)
+        row_id.append(u)
+        col_id.append(v)
+        weights.append(station["fee"])
+        row_id.append(v)
+        col_id.append(u)
+        weights.append(station["fee"])
+    V += 1
+    sparse = csr_matrix((weights, (row_id, col_id)), shape=(V, V), dtype=int)
+    dists = shortest_path(sparse)
     max_score, ts = dp[T]
     curr = starting_station
     min_fee = 0
     for i in range(len(ts)):
         v = ts[i]["station"]
-        min_fee += length[curr][v]
+        min_fee += dists[curr][v]
         curr = v
-    min_fee += length[curr][starting_station]
+    min_fee += dists[curr][starting_station]
     schedule = [t["name"] for t in ts]
     # print(max_score, min_fee, schedule)
     ans = {
         "max_score": max_score,
-        "min_fee" : min_fee,
+        "min_fee" : int(min_fee),
         "schedule": schedule
     }
     return json.dumps(ans)
