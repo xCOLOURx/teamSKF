@@ -27,10 +27,10 @@ def princess_diaries():
     
     end_times = [task["end"] for task in tasks]
     prev_task = [-1]
-    for task in tasks:
+    for i,task in enumerate(tasks):
         s = task["start"]
         pos = bisect_right(end_times, s)
-        prev_task.append(pos-1)
+        prev_task.append(min(i-1,pos-1))
     print(prev_task)
     
     
@@ -50,7 +50,7 @@ def princess_diaries():
             else:
                 dp_tasks.append([t + (task,) for t in dp_tasks[prev_task[i]+1]])    
     except:
-        logger.info(data)
+        print(i, task)
     # print(dp_tasks)
     row_id, col_id, weights = [], [], []
     V = 0
