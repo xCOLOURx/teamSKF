@@ -16,3 +16,4 @@ import routes.slpu
 import routes.ticketing_agent
 import routes.duolingo_sort
 import routes.operation_safeguard
+import routes.the_mage_gambit
