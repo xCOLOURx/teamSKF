@@ -23,26 +23,33 @@ def princess_diaries():
     # print(subway)
     # print(starting_station)
     
-    tasks.sort(key=lambda t: t["end"])
+    tasks.sort(key=lambda t: (t["end"], t["start"]))
     
     end_times = [task["end"] for task in tasks]
-    prev_task = []
+    prev_task = [-1]
     for task in tasks:
         s = task["start"]
         pos = bisect_right(end_times, s)
-        prev_task.append(pos)
-    # print(prev_task)
+        prev_task.append(pos-1)
+    print(prev_task)
     
     
-    dp = [(0, tuple()) for _ in range(T+1)]
+    dp = [0 for _ in range(T+1)]
+    dp_tasks = [[tuple()]]
     for i,task in enumerate(tasks, start=1):
 
-        dp[i] = dp[prev_task[i-1]] 
-        dp[i] = (dp[i][0] + task["score"], dp[i][1] + (task,))
-
-        if (dp[i][0] < dp[i-1][0]):
+        dp[i] = dp[prev_task[i]+1] + task["score"]
+        if (dp[i] < dp[i-1]):
             dp[i] = dp[i-1]
+            dp_tasks.append([t for t in dp_tasks[i-1]])
+        elif (dp[i] == dp[i-1]):
+            best = [t for t in dp_tasks[i-1]]
+            best.extend([t + (task,) for t in dp_tasks[prev_task[i]+1]])
+            dp_tasks.append(best)
+        else:
+            dp_tasks.append([t + (task,) for t in dp_tasks[prev_task[i]+1]])    
     
+    # print(dp_tasks)
     row_id, col_id, weights = [], [], []
     V = 0
     for station in subway:
@@ -57,20 +64,27 @@ def princess_diaries():
     V += 1
     sparse = csr_matrix((weights, (row_id, col_id)), shape=(V, V), dtype=int)
     dists = shortest_path(sparse)
-    max_score, ts = dp[T]
-    curr = starting_station
-    min_fee = 0
-    for i in range(len(ts)):
-        v = ts[i]["station"]
-        min_fee += dists[curr][v]
-        curr = v
-    min_fee += dists[curr][starting_station]
-    schedule = [t["name"] for t in ts]
+    max_score = dp[T]
+    min_fee = 1e9
+    best_sched = None
+    for ts in dp_tasks[T]:
+        curr = starting_station
+        curr_fee = 0
+        for i in range(len(ts)):
+            v = ts[i]["station"]
+            curr_fee += dists[curr][v]
+            curr = v
+        curr_fee += dists[curr][starting_station]
+        schedule = [t["name"] for t in ts]
+        if (curr_fee < min_fee):
+            min_fee = curr_fee
+            best_sched = schedule
+        
     # print(max_score, min_fee, schedule)
     ans = {
         "max_score": max_score,
         "min_fee" : int(min_fee),
-        "schedule": schedule
+        "schedule": best_sched
     }
-    return json.dumps(ans)
+    return ans
     
