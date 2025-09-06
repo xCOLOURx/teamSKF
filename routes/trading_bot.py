@@ -26,8 +26,8 @@ def trading_bot():
             elif (previous_candles[2]["close"] > observation_candles[0]["close"] > observation_candles[1]["close"] > observation_candles[2]["close"]):
                 dict["decision"] = "SHORT"
                 dict["diff"] = observation_candles[0]["close"] - observation_candles[2]["close"]
-
-        dict["id"] = index["id"]
+            dict["id"] = index["id"]
+        
         lst.append(dict)
 
         # TODO: For the remaining balance, take a more lax condition
