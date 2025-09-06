@@ -33,6 +33,8 @@ def trading_bot():
 
     lst_strict = [d for d in lst_strict if d] # Remove empty dicts
 
+    lst_strict = sorted(lst_strict, key=lambda d: d.get('diff', float('-inf')), reverse=True)[:50]
+
     # # TODO: For the remaining balance, take a more lax condition
     # lst_lax = []
     # for index in data:
