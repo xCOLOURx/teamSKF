@@ -18,7 +18,7 @@ def trading_bot():
         previous_candles = index["previous_candles"]
         observation_candles = index["observation_candles"]
 
-        # TODO: improve strategy by being stricter -- taking in previous candles
+        # Taken a stricter condition
         if (previous_candles[2]["volume"] < observation_candles[0]["volume"] < observation_candles[1]["volume"] < observation_candles[2]["volume"]):
             if (previous_candles[2]["close"] < observation_candles[0]["close"] < observation_candles[1]["close"] < observation_candles[2]["close"]):
                 dict["decision"] = "LONG"
@@ -29,15 +29,16 @@ def trading_bot():
 
         dict["id"] = index["id"]
         lst.append(dict)
-        print(f"Number of potential trades: {len(lst)}")
+
+        # TODO: For the remaining balance, take a more lax condition
     
-    # Filter lst to top 50 by 'diff' value
-    lst = sorted(lst, key=lambda d: d.get('diff', float('-inf')), reverse=True)[:50]
+    # # Filter lst to top 50 by 'diff' value
+    # lst = sorted(lst, key=lambda d: d.get('diff', float('-inf')), reverse=True)[:50]
+    
     for d in lst:
         d.pop('diff', None)
     
     print(f"Number of potential trades after filtering top 50: {len(lst)}")
-
-
     print(lst)
+
     return json.dumps(lst)
