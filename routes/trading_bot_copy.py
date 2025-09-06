@@ -18,7 +18,7 @@ def trading_bot():
         previous_candles = index["previous_candles"]
         observation_candles = index["observation_candles"]
 
-        # Taken a stricter condition
+        # TODO: reverse those for very low volume?
         if (observation_candles[0]["volume"] < observation_candles[1]["volume"] < observation_candles[2]["volume"]):
             if (observation_candles[0]["close"] < observation_candles[1]["close"] < observation_candles[2]["close"]):
                 dict["decision"] = "LONG"
