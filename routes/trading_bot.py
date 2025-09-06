@@ -18,19 +18,21 @@ def trading_bot():
         previous_candles = index["previous_candles"]
         observation_candles = index["observation_candles"]
 
-        # Entry at first observation_candle close, exit at last observation_candle close
-        entry_price = observation_candles[0]["close"]
-        exit_price = observation_candles[-1]["close"]
+        if (observation_candles[0]["volume"] < observation_candles[2]["volume"]):
+            if (observation_candles[0]["close"] < observation_candles[2]["close"]):
+                dict["decision"] = "LONG"
+            else:
+                dict["decision"] = "SHORT"
+        else:
+            if (observation_candles[0]["close"] < observation_candles[2]["close"]):
+                dict["decision"] = "SHORT"
+            else:
+                dict["decision"] = "LONG"
 
-        dict["decision"] = "LONG"
-
-        # If price increased, LONG; else SHORT
-        # dict["decision"] = "LONG" if exit_price > entry_price else "SHORT"
-
-        # if ("buy" in title.lower()) or ("long" in title.lower()) or ("bull" in title.lower()) or ("bullish" in title.lower()) or ("moon" in title.lower()) or ("rocket" in title.lower()) or ("pump" in title.lower()):
-        #     dict["decision"] = "LONG"
-        # elif ("sell" in title.lower()) or ("short" in title.lower()) or ("bear" in title.lower()) or ("bearish" in title.lower()) or ("dump" in title.lower()) or ("crash" in title.lower()) or ("down" in title.lower()):
-        #     dict["decision"] = "SHORT"
+        if ("buy" in title.lower()) or ("long" in title.lower()) or ("bull" in title.lower()) or ("bullish" in title.lower()) or ("moon" in title.lower()) or ("rocket" in title.lower()) or ("pump" in title.lower()):
+            dict["decision"] = "LONG"
+        elif ("sell" in title.lower()) or ("short" in title.lower()) or ("bear" in title.lower()) or ("bearish" in title.lower()) or ("dump" in title.lower()) or ("crash" in title.lower()) or ("down" in title.lower()):
+            dict["decision"] = "SHORT"
         
         dict["id"] = index["id"]
         dict["title"] = title
