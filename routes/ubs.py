@@ -16,7 +16,10 @@ def universal_bureau_surv():
     data = request.get_json()
     logger.info(data)
     res = []
-    network_list = data["networks"]
+    try:
+        network_list = data["networks"]
+    except:
+        network_list = data
     for network in network_list:
         ans = {"networkId": network["networkId"]}
         
