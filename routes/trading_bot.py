@@ -20,6 +20,15 @@ def trading_bot():
         dict = {}
         previous_candles = index["previous_candles"]
         observation_candles = index["observation_candles"]
+
+        # Strategy
+        if observation_candles[-1]["close"] > previous_candles[-1]["close"]:
+            dict["decision"] = "LONG"
+        elif sum(candle["closed"] for candle in observation_candles[-3:]) > sum(candle["closed"] for candle in previous_candles[-3:]):
+            dict["decision"] = "LONG"
+        else:
+            dict["decision"] = "SHORT"
+
         dict["decision"] = "LONG" if observation_candles[-1]["close"] > previous_candles[-1]["close"] else "SHORT"
         dict["id"] = index["id"]
         lst.append(dict)
