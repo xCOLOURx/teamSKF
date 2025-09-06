@@ -5,3 +5,4 @@ import routes.square
 import routes.blankety
 import routes.princess_diaries
 import routes.ubs
+import routes.trading_formula
