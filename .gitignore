@@ -1,2 +1,5 @@
 .venv
 main.py
+regress.py
+__pycache__/
+routes/__pycache__/

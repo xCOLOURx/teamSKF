@@ -16,11 +16,10 @@ logger = logging.getLogger(__name__)
 def blankety():
     data = request.get_json()
     logging.info("data sent for evaluation {}".format(data))
-    input_value = data.get("input")
 
     # Implementation here:
     answers = []
-    for series in input["series"]:
+    for series in data["series"]:
         imputed = impute_nulls_with_spline(series, window=3)
         answers.append(imputed.tolist())
 
@@ -28,7 +27,6 @@ def blankety():
 
     logging.info("My result :{}".format(result))
     return json.dumps(result)
-
 
 # Smoothing function (rolling mean)
 def smooth_series(series, window=3):
@@ -49,8 +47,9 @@ def impute_nulls_with_spline(series, window=3):
     return imputed
 
 # # Test input
-# input = {
+# {
 #     "series": [
-#         [0.10, None, 0.30, None, 0.52]
+#         [0.10, null, 0.30, null, 0.52],
+#         [0.20, null, 0.60, null, 1.04]
 #     ]
 # }
