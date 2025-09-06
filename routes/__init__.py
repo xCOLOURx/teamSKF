@@ -15,3 +15,4 @@ import routes.sailing_club
 import routes.slpu
 import routes.ticketing_agent
 import routes.duolingo_sort
+import routes.operation_safeguard
