@@ -45,10 +45,10 @@ def princess_diaries():
             dp_tasks.append([t for t in dp_tasks[i-1]])
         elif (dp[i] == dp[i-1]):
             best = [t for t in dp_tasks[i-1]]
-            best.extend([t + (task,) for t in dp_tasks[prev_task[i]+1]])
+            best.extend([t + ((task["name"], task["station"]),) for t in dp_tasks[prev_task[i]+1]])
             dp_tasks.append(best)
         else:
-            dp_tasks.append([t + (task,) for t in dp_tasks[prev_task[i]+1]])    
+            dp_tasks.append([t + ((task["name"], task["station"]),) for t in dp_tasks[prev_task[i]+1]])    
     # except:
     #     print(i, task)
     # print(dp_tasks)
@@ -72,12 +72,11 @@ def princess_diaries():
     for ts in dp_tasks[T]:
         curr = starting_station
         curr_fee = 0
-        for i in range(len(ts)):
-            v = ts[i]["station"]
+        for _, v in ts:
             curr_fee += dists[curr][v]
             curr = v
         curr_fee += dists[curr][starting_station]
-        schedule = [t["name"] for t in ts]
+        schedule = [name for name, _ in ts]
         if (curr_fee < min_fee):
             min_fee = curr_fee
             best_sched = schedule
