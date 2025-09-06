@@ -19,7 +19,8 @@ def universal_bureau_surv():
     try:
         network_list = data["networks"]
     except:
-        network_list = data
+        network_list = eval(request.get_data().decode())
+    print(network_list)
     for network in network_list:
         ans = {"networkId": network["networkId"]}
         
