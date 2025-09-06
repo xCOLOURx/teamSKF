@@ -22,6 +22,7 @@ def part1(inp):
             ans.append((cl, cr))
             cl = inp[i][0]
             cr = inp[i][1]
+    ans.append((cl, cr))
     return ans
 
 def part2(inp):
