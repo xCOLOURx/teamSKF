@@ -124,7 +124,7 @@ def make_player2_win(optimal_rolls, cols, rows, jumps):
 
     # Replace last roll with overshoot (safe bump)
     last_r = int(optimal_rolls[-1])
-    overshoot_r = last_r + 1 if last_r < 6 else 1
+    overshoot_r = last_r + 2 if last_r < 6 else 1
 
     p1_rolls = optimal_rolls[:-1] + str(overshoot_r)
     p2_rolls = optimal_rolls
