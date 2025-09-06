@@ -54,8 +54,11 @@ def trading_bot():
 
         lst_lax.append(dict)
     
-    # # Filter lst to top 50 by 'diff' value
-    lst_lax = sorted(lst_lax, key=lambda d: d.get('diff', float('-inf')), reverse=True)[:50-len(lst_strict)]
+    # Remove indexes in lst_lax that are already in lst_strict by matching 'id'
+    strict_ids = {d['id'] for d in lst_strict if 'id' in d}
+    lst_lax = [d for d in lst_lax if d.get('id') not in strict_ids]
+    # Now filter lst_lax to top 50 by 'diff' value
+    lst_lax = sorted(lst_lax, key=lambda d: d.get('diff', float('-inf')), reverse=True)[:(50-len(lst_strict))]
 
     lst = lst_strict + lst_lax
     
