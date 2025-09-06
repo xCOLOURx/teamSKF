@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 @app.route('/investigate', methods=['POST'])
 def universal_bureau_surv():
     data = request.get_json()
-    print(data)
+    logger.info(data)
     res = []
     for network in data["networks"]:
         ans = {"networkId": network["networkId"]}
