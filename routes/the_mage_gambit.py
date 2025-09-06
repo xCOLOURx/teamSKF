@@ -79,11 +79,14 @@ def compute_time_for_scenario(intel, reserve, fronts, stamina_full):
     return total_time
 
 
+
 @app.route('/the-mages-gambit', methods=['POST'])
 def mage():
-    
     payload = request.get_json(force=True)
-   
+
+    # Log the raw input for debugging
+    logger.info("Received request payload: %s", payload)
+
     results = []
     for idx, scenario in enumerate(payload):
         intel = scenario.get("intel", [])
@@ -99,8 +102,13 @@ def mage():
             f, c = int(pair[0]), int(pair[1])
             parsed_intel.append((f, c))
 
+        logger.debug(
+            "Scenario %d -> intel=%s, reserve=%d, fronts=%d, stamina=%d",
+            idx, parsed_intel, reserve, fronts, stamina
+        )
+
         time_needed = compute_time_for_scenario(parsed_intel, reserve, fronts, stamina)
         results.append({"time": time_needed})
 
-
+    logger.info("Computed results: %s", results)
     return jsonify(results), 200
