@@ -26,16 +26,15 @@ def part1(inp):
     return ans
 
 def part2(inp):
-    inp.sort(key=lambda x: (x[1], x[0]))
-    n = len(inp)
-    l = 0
+    arr = []
+    for l, r in inp:
+        arr.append((l, 1))
+        arr.append((r, -1))
+    arr.sort()
     ans = 0
     curr = 0
-    for r in range(n):
-        while l < r and inp[l][1] < inp[r][0]:
-            curr -= 1
-            l += 1
-        curr += 1
+    for x, a in arr:
+        curr += a
         ans = max(curr, ans)
     return ans
     
