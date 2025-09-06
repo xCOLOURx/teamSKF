@@ -33,4 +33,4 @@ def universal_bureau_surv():
         res.append(ans)
         
         
-    return json.dumps(res)
+    return json.dumps({"networks": res})
