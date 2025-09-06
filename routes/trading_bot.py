@@ -35,7 +35,6 @@ def trading_bot():
             dict["decision"] = "SHORT"
         
         dict["id"] = index["id"]
-        dict["title"] = title
         lst.append(dict)
     print(lst)
     return json.dumps(lst)
