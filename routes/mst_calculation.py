@@ -15,6 +15,8 @@ from collections import defaultdict
 from routes import app
 
 
+pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+
 
 logger = logging.getLogger(__name__)
 
