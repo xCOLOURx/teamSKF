@@ -15,7 +15,7 @@ def universal_bureau_surv():
     data = request.get_json()
     logger.info(data)
     res = []
-    for network in data["networks"]:
+    for network in data:
         ans = {"networkId": network["networkId"]}
         
         edges = set()
@@ -33,4 +33,4 @@ def universal_bureau_surv():
         res.append(ans)
         
         
-    return json.dumps({"networks": res})
+    return json.dumps(res)
