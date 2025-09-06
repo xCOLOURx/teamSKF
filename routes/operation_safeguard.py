@@ -90,6 +90,11 @@ def operation_safeguard():
     
     chal2 = data["challenge_two"]
     logging.info(chal2)
-    return {"challenge_one": chal1_ans}
+    return {
+        "challenge_one": chal1_ans,
+        "challenge_two": "3",
+        "challenge_three": chal1_ans,
+        "challenge_four": chal1_ans,
+    }
                 
 

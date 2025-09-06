@@ -57,7 +57,7 @@ def duolingo_sort():
     data = request.get_data(as_text=True)
     # print(data)
     data = json.loads(data)
-    # print(data)
+    logger.info(data)
     inp = data["challengeInput"]["unsortedList"]
     lis = []
     for num in inp:
@@ -69,12 +69,14 @@ def duolingo_sort():
                 pass
     # print(lis)
     if (data["part"] == "ONE"):
-        return {
+        res = {
             "sortedList": [str(x) for x,_,_ in sorted(lis)]
         }
     else:
-        return {
+        res = {
             "sortedList": [x for _,_,x in sorted(lis)]
         }
+    logger.info(res)
+    return res
                 
 
