@@ -9,22 +9,6 @@ from text_to_num import text2num
 import zahlwort2num as w2n
 from cnc import convert
 
-ChineseBigUnit_S = [
-    "",
-    "万",
-    "亿",
-    "兆",
-    "京",
-    "垓",
-    "秭",
-    "穰",
-    "沟",
-    "涧",
-    "正",
-    "载",
-    "极"
-]
-
 logger = logging.getLogger(__name__)
 
 
@@ -52,14 +36,13 @@ def english_to_int(s):
 
 def trad_ch_to_int(s):
     res = convert.chinese2number(s)
-    assert not (set(s) & set(ChineseBigUnit_S))
+    assert set(convert.number2chinese(int(res), language="T", forceErLian="forceNot")).issubset(s)
     return res
 
 def simp_ch_to_int(s):
     res = convert.chinese2number(s)
-    assert (set(s) & set(ChineseBigUnit_S))
     
-
+    assert set(convert.number2chinese(int(res), language="S", forceErLian="forceNot")).issubset(s)
     return res
 
 def german_to_int(s):
